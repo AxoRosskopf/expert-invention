@@ -1,0 +1,33 @@
+# --- Python General ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Entornos Virtuales (Tu carpeta venv) ---
+# Es vital no subir esto, pesa mucho y varía por sistema operativo
+venv/
+.venv/
+env/
+
+# --- Variables de Entorno (SEGURIDAD CRÍTICA) ---
+# Nunca subas tu token de Notion al repo
+.env
+.env.local
+
+# --- IDEs (Configuraciones de editor) ---
+.vscode/
+.idea/
+
+# --- Logs y Bases de datos locales ---
+*.log
+*.sqlite3
+
+# --- Testing y Coverage (Para el futuro) ---
+.coverage
+htmlcov/
+.pytest_cache/
+
+# --- Distribución ---
+dist/
+build/
+*.egg-info/
