@@ -44,3 +44,10 @@ class NotionRepository:
         except Exception as e:
             print(f"Error fetching activities from Notion: {e}")
             return []
+    
+    async def get_recommended_activity(self, user_guid: str, quantity:int) -> List[Activity]:
+        try:
+            recommendend_activities = recommend_engine(user, quantity);
+            return recommendend_activities;
+        except Exception as e:
+            print(f"Error fetching recommended activities: {e}")

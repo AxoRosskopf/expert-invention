@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from app.domain.schemas import Activity
-from app.application.services import ActivityService
-from app.api.dependencies import get_service
+from app.domain.schemas import Activity, User
+from app.application.services import ActivityService, UserService
+from app.api.dependencies import get_service, get_user_service
 from app.core.utils import haversine_distance
 
 router = APIRouter()
@@ -38,4 +38,56 @@ async def read_nearby_activities(lat: float, lon: float, service: ActivityServic
     aux.sort(key=lambda x: x[0])
     nearby_activities = [item[1] for item in aux]
     return nearby_activities
+
+
+
+# User endpoints
+
+@router.post('/users', response_model=User)
+async def create_user(user: User, service: UserService = Depends(get_user_service)):
+    create_user = await service.create_user(user)
+    return create_user
+
+
+@router.get('/users', response_model=List[User])
+async def read_users(service: UserService = Depends(get_user_service)):
+    users = await service.get_users()
+    return users
+
+@router.get('/users/{guid}', response_model=User)
+async def read_user(guid: str, service: UserService = Depends(get_user_service)):
+    user = await service.get_user_by_id(guid)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+
+# NEW METHODZ
+
+@router.post('/users/{guid}/activities', response_model=User)
+async def add_activity(guid, activity: Activity, service: UserService = Depends(get_user_service)):
+    updated_user = await service.add_activity(guid, activity)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated_user
+
+@router.post('/users/{guid}/saved_activities', response_model=User)
+async def add_saved_activity(guid, activity: Activity, service: UserService =Depends(get_user_service)):
+    updated_user = await service.add_saved_activity(guid, activity)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")   
+    return updated_user
+
+@router.get('/users/{guid}/saved_activities', response_model=List[Activity])
+async def get_saved_activities(guid, service : UserService = Depends(get_user_service)):
+    activities = await service.get_saved_activities(guid)
+    return activities
+
+@router.delete('/users/{guid_user}/saved_activities/{guid_activity}', response_model=User)
+async def delete_saved_activity(guid_user, guid_activity, service : UserService = Depends(get_user_service)):
+    user = await service.delete_saved_activity(guid_user, guid_activity)
+    if not user:
+        raise HTTPException(status_code=404, detail="User or Activity not found")
+    return user
 
