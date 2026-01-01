@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
-from app.domain.schemas import Activity, User
+from typing import List, Dict, Any
+from app.domain.schemas import Activity, User, InteractionTypeEnum, InteractionRead
 from app.application.services import ActivityService, UserService
 from app.api.dependencies import get_service, get_user_service
 from app.core.utils import haversine_distance
@@ -63,24 +63,19 @@ async def read_user(guid: str, service: UserService = Depends(get_user_service))
 
 
 
-# NEW METHODZ
 
-@router.post('/users/{guid}/activities', response_model=User)
-async def add_activity(guid, activity: Activity, service: UserService = Depends(get_user_service)):
-    updated_user = await service.add_activity(guid, activity)
-    if not updated_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return updated_user
+@router.post('/users/{guid}/interactions', response_model=User)
+async def create_log_interaction(guid, activity: Activity, action: InteractionTypeEnum, service: UserService = Depends(get_user_service)):
+    user = await service.log_interaction(guid, activity, action)
+    return user
 
-@router.post('/users/{guid}/saved_activities', response_model=User)
-async def add_saved_activity(guid, activity: Activity, service: UserService =Depends(get_user_service)):
-    updated_user = await service.add_saved_activity(guid, activity)
-    if not updated_user:
-        raise HTTPException(status_code=404, detail="User not found")   
-    return updated_user
+@router.get('/users/{guid}/interactions', response_model=List[Dict[str, Any]])
+async def read_log_interactions(guid, service: UserService = Depends(get_user_service)):
+    interactions = await service.get_log_interactions(guid)
+    return interactions
 
 @router.get('/users/{guid}/saved_activities', response_model=List[Activity])
-async def get_saved_activities(guid, service : UserService = Depends(get_user_service)):
+async def get_saved_activities(guid,service : UserService = Depends(get_user_service)):
     activities = await service.get_saved_activities(guid)
     return activities
 

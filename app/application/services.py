@@ -1,5 +1,5 @@
-from typing import List
-from app.domain.schemas import Activity, User
+from typing import List, Dict, Any
+from app.domain.schemas import Activity, User, InteractionTypeEnum, InteractionRead
 from app.infrastructure.notion_repository import NotionRepository
 from app.infrastructure.user_repository import UserRepository
 
@@ -22,17 +22,22 @@ class UserService:
     
     async def get_user_by_id(self, guid: str) -> User:
         return await self.repository.get_user(guid)
-    
-    
-    
-    # NEW METHODZ
 
-    async def add_activity(self, guid_user: str,activity: Activity) -> User:
-        return await self.repository.add_activity(guid_user,activity)
+    async def log_interaction(
+                self, 
+                guid_user:str, 
+                activity:Activity, 
+                action:InteractionTypeEnum
+            ) -> User:
+
+        return await self.repository.log_interaction(guid_user,activity,action)
     
-    async def add_saved_activity(self, guid_user:str ,activity: Activity) -> User:
-        return await self.repository.add_saved_activity(guid_user, activity)
-    
+    async def get_log_interactions(self, guid: str) -> List[Dict[str, Any]]:
+        db_interactions = await self.repository.get_log_interactions(guid)
+        return [
+                    InteractionRead.model_validate(interaction).model_dump(mode='json') 
+                    for interaction in db_interactions
+                ]
     async def get_saved_activities(self, guid: str) -> List[Activity]:
         return await self.repository.get_saved_activities(guid)
     
